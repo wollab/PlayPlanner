@@ -74,6 +74,26 @@ for (const [element, thai] of Object.entries({Fire:'ไฟ',Water:'น้ำ',Ic
 }
 
 const skillSummary = name => skillNotes[name] || 'ยังไม่มีคำอธิบายที่ยืนยันได้';
+// Item portraits linked from the matching GameWith weapon pages.
+const weaponPictures = {
+  'rathslinger-r10':'https://img.gamewith.jp/article_tools/mhoutlanders/gacha/weapon_280.png',
+  blood:'https://img.gamewith.jp/article_tools/mhoutlanders/gacha/weapon_250.png'
+};
+const slotSymbols = {weapon:'⚔',head:'⛑',chest:'🛡',arms:'🧤',waist:'◈',legs:'🥾'};
+function abilityPicture(kind,item) {
+  const weapon = item?.slot==='weapon';
+  const symbol = kind==='skill' ? '✦' : kind==='visage' ? '▣' : kind==='buddy' ? '🐾' :
+    weapon && item.type==='Bow' ? '🏹' : slotSymbols[item?.slot] || '◇';
+  const fallback = '<span class="ability-symbol" aria-hidden="true">'+symbol+'</span>';
+  const variant = $('art-variant')?.value || 'male';
+  const slug = item?.url?.split('/').at(-1);
+  const image = weapon ? weaponPictures[item.id] : kind==='gear' ? armorArt[slug]?.[variant] : '';
+  if (!image) return fallback;
+  const caption = weapon ? 'ภาพอาวุธ' : 'ภาพเซ็ตเต็มของเกราะชิ้นนี้';
+  return '<figure class="ability-picture"><a href="'+esc(image)+
+    '" target="_blank" rel="noopener noreferrer"><img src="'+esc(image)+
+    '" alt="'+esc(caption+' · '+item.name)+'"></a><figcaption>'+esc(caption)+'</figcaption></figure>';
+}
 function abilityButton(kind, id, label, level = '') {
   return '<button type="button" class="ability-name" data-kind="'+esc(kind)+'" data-id="'+esc(id)+
     '" data-level="'+esc(level)+'">'+esc(label)+'</button>';
@@ -85,13 +105,14 @@ function setupAbilityDialog() {
     if (!button) return;
     const {kind,id,level} = button.dataset;
     let title = id, url = GW+'skills', body = '';
+    let item;
     if (kind === 'skill') {
       const numericEffect = typeof skillEffects[id] === 'function' ? skillEffects[id](Number(level)) : '';
       body = '<p>'+esc(skillSummary(id))+'</p>'+
         (skillCaps[id] ? '<p>Lv สูงสุด '+skillCaps[id]+'</p>' : '')+
         (numericEffect ? '<p>Lv '+esc(level)+' · '+esc(numericEffect)+'</p>' : '');
     } else {
-      const item = (kind === 'gear' ? gear : kind === 'visage' ? visages : buddies).find(row=>row.id===id);
+      item = (kind === 'gear' ? gear : kind === 'visage' ? visages : buddies).find(row=>row.id===id);
       if (!item) return;
       title = item.name;
       url = item.url;
@@ -113,7 +134,11 @@ function setupAbilityDialog() {
       }
     }
     $('ability-title').textContent = title;
-    $('ability-content').innerHTML = body+(url ? link(url,'แหล่งข้อมูล') : '');
+    $('ability-content').innerHTML = abilityPicture(kind,item)+body+(url ? link(url,'แหล่งข้อมูล') : '');
+    const picture = $('ability-content').querySelector('img');
+    if (picture) picture.addEventListener('error',()=> {
+      picture.closest('figure').textContent = 'ภาพจากแหล่งอ้างอิงโหลดไม่ได้';
+    },{once:true});
     dialog.showModal();
   });
 }

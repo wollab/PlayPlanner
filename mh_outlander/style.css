@@ -123,3 +123,15 @@ button.ability-name {
 #ability-dialog::backdrop { background: rgb(0 0 0 / .72); }
 #ability-dialog h2 { margin-top: 0; }
 #ability-dialog form { margin-top: 1rem; }
+#weapon-path { margin-bottom: 12px; }
+.guide-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+.guide-inputs select { display: block; margin: 4px 0 8px; }
+#guide-results .guide-grid > section { background: #192820; border-left: 2px solid var(--mint); padding: 10px; }
+#guide-results ul { list-style: none; padding: 0; margin: 4px 0; }
+#guide-results li { margin-bottom: 8px; }
+#guide-results small { display: block; }
+#guide-results [data-guide-skill] { margin-top: 3px; }
+.ability-picture { margin: 0 0 .65rem; }
+.ability-picture img { display: block; max-width: 100%; max-height: 155px; object-fit: contain; }
+.ability-symbol { font-size: 1.6rem; }
+@media (max-width: 700px) { .guide-grid { grid-template-columns: minmax(0,1fr); } }
