@@ -135,7 +135,9 @@ function setupAbilityDialog() {
         body = '<p>Cost '+item.cost+' · ช่อง Core</p><small class="item-ability">'+
           esc(item.core || 'ยังไม่มีข้อมูลยืนยัน')+'</small><ul>'+sets+'</ul>';
       } else {
-        body = '<small class="item-ability">'+esc(item.effect)+'</small>';
+        body = '<p>'+esc(item.rarity)+' · ATK สูงสุด '+item.maxAttack+'</p>'+
+          '<small class="item-ability">'+esc(item.effect)+'</small>'+
+          '<small class="item-ability">'+esc(item.abilities)+'</small>';
       }
     }
     $('ability-title').textContent = title;

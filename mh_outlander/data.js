@@ -66,13 +66,20 @@ const visages = visageCatalog.map(card => ({
   core: visageCoreEffects[card.id] ?? (card.cost === 1 ? 'ไม่มี Core effect' : ''),
   url: GW+'visages/'+card.id
 }));
-const buddies = [
+const buddyEffects = [
   ['kojiro','Kojiro','หลังทำ Rupture: เพิ่มดาเมจไฟชั่วคราว 10 วิ · ค่าขึ้นกับระดับ Aid'],
   ['daisho','Daisho','หลัง Parry หรือ Ferocity: เพิ่มดาเมจมังกรชั่วคราว'],
   ['pipa','Pipa','หลังทำ Piercing Damage: เพิ่มดาเมจสายฟ้า'],
   ['ro','Ro','หลังทำ Charge Damage: เพิ่มดาเมจน้ำแข็งชั่วคราว'],
   ['hoppy','Hoppy','ช่วยหยุดมอนสเตอร์ด้วยกับดักและ Ultimate']
-].map(([id,name,effect])=>({id,name,effect,url:GW+'articles/buddy-tier-list'}));
+];
+const buddyRows = typeof module !== 'undefined' ? require('./buddy-catalog.js') : buddyCatalog;
+const buddies = buddyRows.map(([name,rarity,role,attack,maxAttack,boost,abilities])=>{
+  const id = name.toLowerCase().replaceAll(' ','-');
+  const note = buddyEffects.find(row=>row[0]===id)?.[2];
+  const effect = [role, boost, note].filter(Boolean).join(' · ');
+  return {id,name,rarity,role,attack:Number(attack),maxAttack:Number(maxAttack),boost,abilities,effect,url:GW+'buddies'};
+});
 const monsters = {
   Rathalos:{weak:'Dragon',url:GW+'monsters/rathalos',ranks:{II:'★8–9',III:'★10–11'}, parts:{'Scale':'ลำตัว','Shell':'หัว','Webbing':'ปีก','Tail':'หาง'}},
   Anjanath:{weak:'Water',url:GW+'monsters/anjanath',ranks:{I:'★3–6',II:'★7–9',III:'★10'},parts:{'Scale':'ขาหลัง','Nosebone':'หัว'},unverified:['Nosebone III']}

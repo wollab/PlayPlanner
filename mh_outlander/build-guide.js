@@ -55,7 +55,7 @@ function renderGuide() {
   const cards = visages.filter(card=>card.sets.includes(setName) && card.cost>1).slice(0,3);
   const cardList = cards.map(card=>'<li>'+abilityButton('visage',card.id,card.name)+
     ' · Cost '+card.cost+'<small>'+esc(card.core || setName)+'</small></li>').join('');
-  const buddy = buddies.find(item=>item.id===({Fire:'kojiro',Thunder:'pipa',Ice:'ro',Dragon:'daisho'}[element]));
+  const buddy = buddies.find(item=>item.id===({Fire:'kojiro',Water:'hoppy',Thunder:'pipa',Ice:'ro',Dragon:'daisho'}[element]));
   const first = matches[0];
   const suggestion = first ? '<div class="guide-pick"><strong>อาวุธแนะนำให้พิจารณา</strong><br>'+
     abilityButton('gear',first.id,first.name)+'<small>ATK '+first.attack+' · R'+first.rank+
