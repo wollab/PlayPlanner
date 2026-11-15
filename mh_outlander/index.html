@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="จัดบิลด์ Monster Hunter Outlanders เทียบสกิลและวางแผนล่าวัตถุดิบ">
+<title>PlayPlanner · Monster Hunter Outlanders</title>
+<link rel="stylesheet" href="style.css">
+<script defer src="armor-catalog.js"></script><script defer src="visage-catalog.js"></script><script defer src="hunt-data.js"></script>
+<script defer src="data.js"></script><script defer src="logic.js"></script>
+<script defer src="optimizer.js"></script><script defer src="app.js"></script><script defer src="skill-search.js"></script>
+<script defer src="armor-art.js"></script><script defer src="build-library.js"></script>
+</head>
+<body>
+<header class="mast"><div class="brand"><span aria-hidden="true">◇</span> PLAYPLANNER</div><span class="game">Monster Hunter Outlanders</span><a href="#build-library">ภาพเกราะ / บิลด์ที่เซฟ ↓</a></header>
+<main>
+<section class="hero">
+  <div><h1>Build Planner</h1><p>จัดชุดล่า เทียบสกิล แล้วดูว่าต้องฟาร์มอะไรต่อ</p></div>
+  <div class="edition" id="armor-coverage"></div>
+</section>
+<nav class="jump" aria-label="ไปยังส่วนต่าง ๆ"><a href="#skill-builder">ค้นชุด</a><a href="#loadout">จัดชุด</a><a href="#skill-panel">สกิล</a><a href="#hunt-panel">แผนล่า</a><a href="#build-library">บิลด์ที่เซฟ</a><a href="#bow-guide">วิธีเล่น</a></nav>
+<section class="panel" id="skill-builder">
+  <div class="bar"><h2>ค้นชุดตามสกิล</h2><button id="bow-example" type="button">ลองตัวอย่าง Bow</button></div>
+  <div class="body skill-builder-body">
+    <form id="skill-search">
+      <p class="muted lead">เลือกสกิลสูงสุด 3 อย่างพร้อมเลเวลขั้นต่ำ ระบบจะหาเกราะ 5 ส่วนและนับโบนัสเซ็ตให้</p>
+      <label class="catalog-filter" for="skill-filter">ค้นหาชื่อสกิล <input id="skill-filter" type="search" placeholder="เช่น Bow หรือ Stamina"></label>
+      <div id="skill-goals"></div>
+      <label class="line filter"><input type="checkbox" id="prefer-exact" checked> เลือกเลเวลพอดีก่อนเมื่อหาได้</label>
+      <div class="search-actions">
+        <label for="rank-limit">Rarity เกราะสูงสุด <select id="rank-limit"></select></label>
+        <button class="primary" type="submit">ค้นหาชุดเกราะ</button>
+      </div>
+    </form>
+    <div id="search-result"><p class="muted">ผลค้นหาจะแสดงทีละสกิลว่าได้เลเวลเท่าไร และยังขาดเท่าไร</p></div>
+  </div>
+</section>
+<div class="layout">
+  <section class="panel" id="loadout">
+    <div class="bar"><h2>จัดชุด</h2><div class="build-actions"><a href="#build-library">ภาพเกราะ / เซฟ</a><button id="clear" type="button">ล้างชุด</button></div></div>
+    <div class="body">
+      <p class="muted lead">เทียบสกิลและ DEF ของชุดที่เลือก ค่าดาเมจขึ้นกับอาวุธ มอนสเตอร์ ท่าและเงื่อนไขบัฟ</p>
+      <label class="catalog-filter" for="armor-filter">กรองเกราะด้วยชื่อหรือสกิล
+        <input id="armor-filter" type="search" placeholder="เช่น Bow Skill Boost">
+      </label>
+      <div class="formrows" id="gear"></div>
+      <div class="subhead"><h3>Visage</h3><strong id="cost"></strong></div>
+      <label class="line">Cost สูงสุดของคุณ <input id="budget" type="number" min="0" max="99" step="1"></label>
+      <div class="formrows cards" id="cards"></div>
+      <p id="card-note" class="muted" aria-live="polite"></p>
+      <div id="visage-details"></div>
+      <label class="catalog-filter" for="visage-recommend">แนวทางเลือกการ์ด
+        <select id="visage-recommend"><option value="">เลือกแนวทาง</option><option value="fire">ธาตุไฟ</option><option value="water">ธาตุน้ำ</option><option value="thunder">ธาตุสายฟ้า / Luka</option></select>
+      </label>
+      <div id="visage-suggestion"></div>
+      <div class="subhead"><h3>Buddy</h3></div>
+      <label class="sr" for="buddy">Buddy</label><select id="buddy"></select>
+      <p id="buddy-note" class="muted"></p>
+    </div>
+  </section>
+  <section class="panel" id="skill-panel">
+    <div class="bar"><h2>สกิลรวม</h2><span id="skill-count" class="badge"></span></div>
+    <div class="body"><p class="muted lead">แต้มจากอาวุธ เกราะ และโบนัสเซ็ตเกราะ บางสกิลมีเงื่อนไขอาวุธ กดชื่อสกิลเพื่อดูที่มา</p>
+      <div id="skills" aria-live="polite"></div><div class="subhead"><h3>โบนัสเซ็ตเกราะ</h3></div><div id="sets"></div>
+      <div class="subhead"><h3>เอฟเฟกต์ Visage</h3></div><div id="effects"></div>
+      <div class="subhead"><h3>เอฟเฟกต์ Buddy</h3></div><div id="buddy-effects"></div>
+    </div>
+  </section>
+  <div class="right">
+    <section class="panel" id="compare-panel">
+      <div class="bar"><h2>เปรียบเทียบ</h2></div>
+      <div class="body">
+        <label class="sr" for="preset">บิลด์อ้างอิง</label><select id="preset"></select>
+        <p id="preset-source" class="muted"></p>
+        <button id="apply" class="primary" type="button">ใช้บิลด์นี้</button>
+        <div id="compare"></div>
+      </div>
+    </section>
+    <section class="panel" id="hunt-panel">
+      <div class="bar"><h2>แผนล่า</h2><span class="badge" id="hunt-count"></span></div>
+      <div class="body"><p class="muted lead">รวมของเฉพาะขั้นที่เลือก กรอกจำนวนที่มี แล้วดูยอดที่ขาด</p>
+        <label class="line filter"><input type="checkbox" id="missing-only"> แสดงเฉพาะที่ยังขาด</label>
+        <div id="hunt"></div>
+      </div>
+    </section>
+  </div>
+</div>
+<section class="panel" id="bow-guide">
+  <div class="bar"><h2>วิธีเล่นธนู</h2></div>
+  <div class="body">
+    <details open><summary>บังคับง่าย · โจมตีและหลบ</summary>
+      <p>แตะโจมตีต่อเนื่องให้ระบบเลือกท่า กดหลบเมื่อมอนเตรียมโจมตี แล้วกลับมายิงเมื่อปลอดภัย ดูระดับชาร์จและสตามินาระหว่างเล่น</p>
+      <p class="muted">ลำดับแตะหรือกดค้างเพื่อออกท่าเฉพาะของแต่ละตัวละครในโหมดนี้ยังไม่ได้ยืนยันในเกม</p>
+    </details>
+    <details><summary>ตัวเอก · แบบมีปุ่มสกิลแยก</summary>
+      <p>สกิล 1 Slide Shot → ยิงปกติ → สกิล 2 Power Shot แล้ววน ใช้ Slide Shot ปรับตำแหน่งและรักษาระดับชาร์จ เมื่อมอนเปิดช่องให้ขยับเข้าระยะเพื่อให้ลูกกระจายโดนมากขึ้น</p>
+      <p>เมื่อ Dragon Coating เต็ม ใช้สกิล 3 · หลัง Perfect Evade กดยิงปกติเพื่อใช้ Piercing Shot</p>
+    </details>
+    <details><summary>Luka และ Madelyn · แบบมีปุ่มสกิลแยก</summary>
+      <p><strong>Luka</strong> ใช้สกิล 1 หรือ 2 สะสม Thunder Coating กดสกิล 2 ซ้ำเพื่อจบ Arc Drift และใช้สกิล 3 เมื่อมีพลังพร้อม</p>
+      <p><strong>Madelyn</strong> สะสมสปอร์ถึง Lv.10 → กดสกิล 1 ค้าง → วนสกิล 1 และ 2 ระหว่าง Violet Plume Burst</p>
+    </details>
+    <details><summary>เลือกสกิลและธาตุสำหรับการล่า</summary>
+      <p><strong>Stamina Conversion</strong> เพิ่มดาเมจของท่าโจมตีที่ใช้สตามินา ส่วน <strong>Charged Power Shot</strong> เพิ่มดาเมจเมื่อรักษาระดับชาร์จของอาวุธระยะไกลไว้</p>
+      <p><strong>Flawless</strong> ทำงานเมื่อเลือดเต็ม และ <strong>Weakspot Follow-Up</strong> มีโอกาสโจมตีเพิ่มเมื่อยิงส่วนที่แตกแล้ว</p>
+      <p>สกิลเพิ่มธาตุ Lv.7 ให้โบนัสธาตุสูงขึ้นเมื่อล่า Radiant เลือกธาตุอาวุธและสกิลให้ตรงกับจุดอ่อน แล้วเทียบกับชุด Charged Power Shot ตามมอนและจังหวะเล่นจริง ตัวเลขโบนัสธาตุและโบนัสโจมตีรวมใช้ฐานคำนวณต่างกัน</p>
+    </details>
+    <p class="muted guide-sources">ข้อมูลอ้างอิง
+      <a href="https://gamewith.ai/monster-hunter-outlanders/en/articles/bow-guide">Bow Guide</a> ·
+      <a href="https://gamewith.ai/monster-hunter-outlanders/en/adventurers/luka">Luka</a> ·
+      <a href="https://gamewith.ai/monster-hunter-outlanders/en/adventurers/madelyn">Madelyn</a> ·
+      <a href="https://gamewith.ai/monster-hunter-outlanders/en/articles/best-bow-builds">Bow Builds</a> ·
+      <a href="https://gamewith.ai/monster-hunter-outlanders/en/skills/stamina-conversion">Stamina Conversion</a> ·
+      <a href="https://gamewith.ai/monster-hunter-outlanders/en/skills/charged-power-shot">Charged Power Shot</a>
+    </p>
+  </div>
+</section>
+<section class="panel" id="weapon-guides">
+  <div class="bar"><h2>แนวทางอาวุธทั้ง 8 ประเภท</h2></div>
+  <div class="body"><p class="muted">ดูบิลด์และสกิลของตัวเอกตามประเภทอาวุธจาก GameWith</p>
+    <div class="weapon-links">
+      <a href="https://gamewith.ai/monster-hunter-outlanders/en/articles/best-builds">Great Sword</a>
+      <a href="https://gamewith.ai/monster-hunter-outlanders/en/articles/best-builds">Long Sword</a>
+      <a href="https://gamewith.ai/monster-hunter-outlanders/en/articles/best-builds">Dual Blades</a>
+      <a href="https://gamewith.ai/monster-hunter-outlanders/en/articles/best-builds">Lance</a>
+      <a href="https://gamewith.ai/monster-hunter-outlanders/en/articles/best-builds">Hammer</a>
+      <a href="https://gamewith.ai/monster-hunter-outlanders/en/articles/best-builds">Charge Blade</a>
+      <a href="https://gamewith.ai/monster-hunter-outlanders/en/articles/best-builds">Heavy Bowgun</a>
+      <a href="https://gamewith.ai/monster-hunter-outlanders/en/articles/best-bow-builds">Bow</a>
+    </div>
+  </div>
+</section>
+<section class="panel" id="build-library">
+  <div class="bar"><h2>ภาพเกราะและบิลด์ที่บันทึก</h2></div>
+  <div class="body">
+    <div class="appearance-head">
+      <div><h3>ชุดที่กำลังจัด</h3><p class="muted">ภาพอ้างอิงของเซ็ตเต็มที่แต่ละชิ้นมาจาก</p></div>
+      <label>ตัวละคร <select id="art-variant"><option value="male">ชาย</option><option value="female">หญิง</option></select></label>
+    </div>
+    <div id="current-appearance"></div>
+    <form id="save-build" class="save-build">
+      <label for="build-name">ชื่อบิลด์<input id="build-name" maxlength="60" required placeholder="เช่น Bow · ฟาร์ม R8"></label>
+      <button class="primary" type="submit">บันทึกชุดนี้</button>
+    </form>
+    <p class="muted" id="save-feedback" role="status"></p>
+    <div class="backup-controls">
+      <button id="export-builds" type="button">ส่งออกบิลด์ที่เซฟ</button>
+      <label class="import-button" for="import-builds">นำเข้าบิลด์จากไฟล์</label>
+      <input id="import-builds" type="file" accept=".json,application/json" class="sr">
+    </div>
+    <p class="muted">สำรองบิลด์เป็นไฟล์เพื่อนำไปใช้อีกเบราว์เซอร์หรือมือถือ การนำเข้าจะเพิ่มบิลด์โดยเก็บของเดิมไว้</p>
+    <div class="subhead"><h3>เทียบสองบิลด์</h3></div>
+    <div class="build-pickers">
+      <div><label for="build-a">บิลด์ A</label><select id="build-a"></select><button id="load-build-a" type="button">นำ A มาจัดต่อ</button></div>
+      <div><label for="build-b">บิลด์ B</label><select id="build-b"></select><button id="load-build-b" type="button">นำ B มาจัดต่อ</button></div>
+    </div>
+    <div id="saved-comparison"></div>
+  </div>
+</section>
+<footer class="panel" id="sources"><div class="bar"><h2>แหล่งข้อมูล</h2></div><div class="body">
+  <p>แฟนทูลอิสระ · บันทึกชุดและของที่มีไว้ในเบราว์เซอร์นี้</p>
+  <p>คลังเกราะอ้างอิง <a href="https://gamewith.ai/monster-hunter-outlanders/en/armor">GameWith Armor List</a> ระดับที่แหล่งข้อมูลยังไม่ลงแต้มจะยังเลือกไม่ได้ · คำแนะนำ Midori <a href="https://mhoutlanders.net/adventurers/midori/">MH Outlanders Wiki อ้าง Game8</a></p>
+  <p>ตัวช่วยเทียบค่าคาดหมายตามเงื่อนไขการต่อสู้ <a href="https://mhnowcalc.com/en/outlanders-manual-en/">Outlanders Calc</a></p>
+  <p>ลิงก์ Game8 ที่ให้มา: <a href="https://share.google/yeWKj8CxBZQkZzjRB">เกราะ</a> · <a href="https://share.google/kSqAknk1EwZsxvBHt">อาวุธ</a> · <a href="https://share.google/m6DCaC8swSnq4KjCT">สกิล</a> · <a href="https://share.google/xNm226Oz7Gl4Bl8u9">บิลด์</a> · <a href="https://share.google/sMwp6OTMq0G2PPDpq">Visage</a> · <a href="https://share.google/6CZDuDBo32Q4wzTcZ">ตัวละคร</a> · <a href="https://share.google/xIHxcVRr1EnxUqBo9">มอนสเตอร์</a></p>
+</div></footer>
+</main>
+<div class="sr" id="status" role="status"></div>
+</body>
+</html>
