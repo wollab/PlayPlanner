@@ -86,8 +86,9 @@ function renderVisageDetails(result) {
     if (!card) return '';
     const core = card.core || 'ยังไม่มีข้อมูล Core ที่ตรวจยืนยันได้';
     return '<div class="effect"><strong>'+abilityButton('visage',card.id,card.name)+' · Cost '+card.cost+'</strong> · '+(index===0?'Core':'ช่อง '+(index+1))+
-      '<br>เซ็ต: '+esc(card.sets.join(' / '))+'<br>Core effect'+(index===0?' (ช่องนี้ทำงานเมื่อเข้าเงื่อนไข)':' (ทำงานเมื่อใส่ช่อง Core)')+
-      ': '+esc(core)+'<br>'+link(card.url,'รายละเอียดการ์ด')+'</div>';
+      '<small class="item-ability">เซ็ต: '+esc(card.sets.join(' / '))+'</small>'+
+      '<small class="item-ability">Core effect'+(index===0?' (เมื่อเข้าเงื่อนไข)':' (เมื่อใส่ช่อง Core)')+
+      '<br>'+esc(core)+'</small>'+link(card.url,'รายละเอียดการ์ด')+'</div>';
   }).join('');
 }
 
@@ -162,7 +163,8 @@ function render() {
       return effect(esc(name)+' · '+count+' ชิ้น<br>'+first+' ชิ้น: '+(count>=first?esc(set?.[0]||'ดูแหล่งข้อมูล'):'ยังไม่เปิด')+
         '<br>'+second+' ชิ้น: '+(count>=second?esc(set?.[1]||'ดูแหล่งข้อมูล'):'ยังไม่เปิด'));
     }).join('') + (core ? effect('Core: '+esc(core.name)+'<br>'+esc(current.core||'ยังไม่ได้ยืนยัน ดูข้อมูลการ์ด')):'') : empty('ยังไม่ได้เลือกการ์ด');
-  $('buddy-effects').innerHTML=buddy?effect(abilityButton('buddy',buddy.id,buddy.name)+' · '+esc(buddy.effect)):empty('ยังไม่ได้เลือก Buddy');
+  $('buddy-effects').innerHTML=buddy?effect(abilityButton('buddy',buddy.id,buddy.name)+
+    '<small class="item-ability">'+esc(buddy.effect)+'</small>'):empty('ยังไม่ได้เลือก Buddy');
   const keys=Array.from(new Set([...skills,...Object.keys(reference.levels)])).sort((a,b)=>(reference.levels[b]??0)-(reference.levels[a]??0)||a.localeCompare(b));
   const changes=Object.keys(slots).flatMap(s=>{
     const next=reference.selected.find(g=>g.slot===s);

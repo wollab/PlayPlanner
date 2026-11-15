@@ -29,7 +29,16 @@ const starterGear = [
 const importedArmor = armorLibrary.items.map(([id,slot,name,set,rank,defense,skills,materials,step,url]) =>
   ({id,slot,name,set,rank,defense,skills,materials:materials ?? [],materialsUnknown:materials === null,step,url}));
 const importedIds = new Set(importedArmor.map(item => item.id));
-const gear = [...starterGear.filter(item => !importedIds.has(item.id)), ...importedArmor];
+const weaponRows = typeof module !== 'undefined' ? require('./weapon-catalog.js') : weaponCatalog;
+const importedWeapons = weaponRows.flatMap(([slug,name,type,range,attack,affinity,element,elementAttack,sharpness,skill]) => {
+  const url = GW+'weapons/'+slug;
+  const rank = Number(range.split('-').at(-1));
+  if (starterGear.some(item=>item.url===url && item.rank===rank)) return [];
+  return [{id:'weapon-'+slug+'-r'+rank,slot:'weapon',name,type,rank,rankRange:range,attack,
+    affinity,element,elementAttack,sharpness,skills:skill ? {[skill]:10} : {},url,
+    materials:[],materialsUnknown:true}];
+});
+const gear = [...starterGear.filter(item => !importedIds.has(item.id)), ...importedWeapons, ...importedArmor];
 const armorSets = {
   Rathalos:{threshold:3, label:"Rathalos's Weakness", skills:{'Weakspot Exploit':1}},
   Anjanath:{threshold:3, label:'Anjanath Ember', skills:{[F]:1}},

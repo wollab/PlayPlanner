@@ -10,7 +10,8 @@ const weaponPaths = {
   'Heavy Bowgun':['Ammo Enhancement','Capacity Boost','Piercing Strike'],
   Bow:['Bow Skill Boost','Charged Power Shot','Stamina Conversion']
 };
-const elements = {Fire:'🔥 ไฟ',Water:'💧 น้ำ',Thunder:'⚡ สายฟ้า',Ice:'❄ น้ำแข็ง',Dragon:'มังกร',None:'ไร้ธาตุ'};
+const elements = {Fire:'🔥 ไฟ',Water:'💧 น้ำ',Thunder:'⚡ สายฟ้า',Ice:'❄ น้ำแข็ง',Dragon:'มังกร',
+  None:'ไร้ธาตุ',Poison:'พิษ',Paralyzed:'อัมพาต',Sleep:'หลับ',Blast:'ระเบิด'};
 const weapons = gear.filter(item => item.slot === 'weapon');
 const guideType = $('guide-type');
 const guideElement = $('guide-element');
@@ -24,7 +25,8 @@ guideType.innerHTML = selectOptions(rows(Object.keys(weaponPaths)), 'เลื�
 function renderGuide() {
   const type = guideType.value, element = guideElement.value;
   const weapon = weapons.find(item=>item.id===guideWeapon.value);
-  const matches = weapons.filter(item=>item.type===type && item.element===element);
+  const matches = weapons.filter(item=>item.type===type && item.element===element)
+    .sort((a,b)=>b.attack-a.attack || b.rank-a.rank);
   guideElement.disabled = !type;
   guideWeapon.disabled = !matches.length;
   guideWeapon.innerHTML = selectOptions(matches.map(item=>({
@@ -32,7 +34,7 @@ function renderGuide() {
   })), matches.length ? 'เลือกอาวุธ' : 'ยังไม่มีอาวุธในคลังสำหรับตัวเลือกนี้');
   if (weapon && matches.includes(weapon)) guideWeapon.value = weapon.id;
   if (!type || !element) {
-    guideResults.innerHTML = '';
+    guideResults.innerHTML = '<p class="muted">เลือกประเภทและธาตุเพื่อดูอาวุธและตัวเลือกสกิลแนะนำ</p>';
     return;
   }
 
@@ -54,7 +56,13 @@ function renderGuide() {
   const cardList = cards.map(card=>'<li>'+abilityButton('visage',card.id,card.name)+
     ' · Cost '+card.cost+'<small>'+esc(card.core || setName)+'</small></li>').join('');
   const buddy = buddies.find(item=>item.id===({Fire:'kojiro',Thunder:'pipa',Ice:'ro',Dragon:'daisho'}[element]));
-  guideResults.innerHTML = (weapon ? '<p>'+abilityButton('gear',weapon.id,weapon.name)+'</p>' :
+  const first = matches[0];
+  const suggestion = first ? '<div class="guide-pick"><strong>อาวุธแนะนำให้พิจารณา</strong><br>'+
+    abilityButton('gear',first.id,first.name)+'<small>ATK '+first.attack+' · R'+first.rank+
+    ' · พลังโจมตีสูงสุดในตัวเลือกที่กรอง ณ ระดับที่แสดง</small>'+
+    (weapon?.id===first.id ? '' : '<button type="button" data-guide-weapon="'+esc(first.id)+'">เลือกอาวุธนี้</button>')+
+    '</div>' : '';
+  guideResults.innerHTML = suggestion+(weapon ? '<p>อาวุธในบิลด์ · '+abilityButton('gear',weapon.id,weapon.name)+'</p>' :
     '<p class="muted">'+(matches.length ? 'เลือกอาวุธเพื่อใช้กับชุดนี้' :
       'คลังยังไม่มีอาวุธคู่นี้ · ดูแนวทางสกิลด้านล่างได้')+'</p>')+
     '<div class="guide-grid"><section><h3>สกิลที่เข้ากับสายนี้</h3><ul>'+skills+'</ul></section>'+
@@ -69,6 +77,12 @@ function armorFit(item, skills) {
   return skills.reduce((sum, name)=>sum+(item.skills[name] || 0),0);
 }
 guideElement.innerHTML = selectOptions(Object.entries(elements).map(([id,label])=>({id,label})), 'เลือกธาตุ');
+$('guide-water-bow').addEventListener('click',()=> {
+  guideType.value = 'Bow';
+  guideElement.value = 'Water';
+  guideWeapon.value = '';
+  renderGuide();
+});
 guideType.addEventListener('change',()=> {
   guideElement.value = '';
   guideWeapon.value = '';
@@ -83,6 +97,12 @@ guideWeapon.addEventListener('change',()=> {
   renderGuide();
 });
 guideResults.addEventListener('click',event=> {
+  const weaponId = event.target.closest('[data-guide-weapon]')?.dataset.guideWeapon;
+  if (weaponId) {
+    guideWeapon.value = weaponId;
+    guideWeapon.dispatchEvent(new Event('change'));
+    return;
+  }
   const name = event.target.closest('[data-guide-skill]')?.dataset.guideSkill;
   if (!name) return;
   const fields = Array.from({length:goalCount},(_,i)=>$('goal-'+i));

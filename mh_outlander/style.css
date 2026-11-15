@@ -130,6 +130,21 @@ button.ability-name {
 #guide-results ul { list-style: none; padding: 0; margin: 4px 0; }
 #guide-results li { margin-bottom: 8px; }
 #guide-results small { display: block; }
+.item-ability, #guide-results small {
+  display: block;
+  color: #b0cebf;
+  font-size: .78rem;
+  line-height: 1.45;
+  margin: .16rem 0 .45rem;
+}
+.guide-quick { margin-bottom: .6rem; }
+.guide-pick {
+  background: #23372c;
+  border-left: 3px solid var(--gold);
+  padding: .55rem .75rem;
+  margin: .4rem 0 .75rem;
+}
+.guide-pick > strong { color: var(--gold); }
 #guide-results [data-guide-skill] { margin-top: 3px; }
 .ability-picture { margin: 0 0 .65rem; }
 .ability-picture img { display: block; max-width: 100%; max-height: 155px; object-fit: contain; }

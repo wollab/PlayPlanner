@@ -118,19 +118,24 @@ function setupAbilityDialog() {
       url = item.url;
       if (kind === 'gear') {
         const stats = ['R'+item.rank,item.element,item.attack != null && 'ATK '+item.attack,
+          item.elementAttack > 0 && 'ธาตุ / สถานะ '+item.elementAttack,
+          item.affinity && 'Affinity '+item.affinity,item.sharpness && 'Sharpness '+item.sharpness,
           item.defense != null && 'DEF '+item.defense].filter(Boolean);
         const skills = Object.entries(item.skills).map(([name,lv]) =>
-          '<li><strong>'+esc(name)+' · Lv '+lv+'</strong><br>'+esc(skillSummary(name))+'</li>').join('');
+          '<li><strong>'+esc(name)+' · Lv '+lv+'</strong><small class="item-ability">'+esc(skillSummary(name))+'</small></li>').join('');
         const bonus = armorSets[item.set];
         body = '<p>'+esc(stats.join(' · '))+'</p>'+
           (skills ? '<ul>'+skills+'</ul>' : '<p>ไม่มีแต้มสกิลบนชิ้นนี้</p>')+
-          (bonus ? '<p>'+esc(bonus.label)+' · '+bonus.threshold+' ชิ้น</p>' : '');
+          (bonus ? '<p>'+esc(bonus.label)+' · '+bonus.threshold+' ชิ้น</p>' : '')+
+          (item.rankRange ? '<small class="item-ability">ข้อมูลในแอปเป็นค่าสูงสุดของช่วง R'+esc(item.rankRange)+
+            ' · ดูสเตตัสรายระดับและสูตรได้ที่แหล่งข้อมูล</small>' : '');
       } else if (kind === 'visage') {
         const sets = item.sets.map(name => '<li><strong>'+esc(name)+'</strong><br>'+
           esc((visageSetEffects[name] || []).join(' / ') || 'ยังไม่มีคำอธิบายโบนัสเซ็ต')+'</li>').join('');
-        body = '<p>Cost '+item.cost+' · ช่อง Core: '+esc(item.core || 'ยังไม่มีข้อมูลยืนยัน')+'</p><ul>'+sets+'</ul>';
+        body = '<p>Cost '+item.cost+' · ช่อง Core</p><small class="item-ability">'+
+          esc(item.core || 'ยังไม่มีข้อมูลยืนยัน')+'</small><ul>'+sets+'</ul>';
       } else {
-        body = '<p>'+esc(item.effect)+'</p>';
+        body = '<small class="item-ability">'+esc(item.effect)+'</small>';
       }
     }
     $('ability-title').textContent = title;
