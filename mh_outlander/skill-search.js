@@ -5,7 +5,7 @@ const searchableSkills = [...new Set([
   ...Object.values(armorSets).flatMap(rule => Object.keys(rule.skills))
 ])].sort((a, b) => a.localeCompare(b));
 const skillOptionText = searchableSkills.map(name =>
-  '<option value="' + esc(name) + '">' + esc(name) + '</option>').join('');
+  '<option value="' + esc(name) + '">' + esc(name+' · '+skillSummary(name)) + '</option>').join('');
 const goalCount = 3;
 
 $('armor-coverage').innerHTML = 'เกราะ ' + armorLibrary.pieces + ' ชิ้น · ' +
@@ -13,7 +13,7 @@ $('armor-coverage').innerHTML = 'เกราะ ' + armorLibrary.pieces + ' ช
 $('skill-goals').innerHTML = Array.from({length: goalCount}, (_, index) =>
   '<div class="goal-row"><label>สกิลที่ ' + (index + 1) + '<select id="goal-' + index +
   '"><option value="">เลือกสกิล</option>' + skillOptionText + '</select></label><label>Lv ขั้นต่ำ<select id="goal-lv-' +
-  index + '" aria-label="เลเวลขั้นต่ำสกิลที่ ' + (index + 1) + '" disabled></select></label></div>').join('');
+  index + '" aria-label="เลเวลขั้นต่ำสกิลที่ ' + (index + 1) + '" disabled></select></label><div class="goal-description" id="goal-note-'+index+'"></div></div>').join('');
 
 const availableRanks = [...new Set(importedArmor.map(item => item.rank))].sort((a, b) => a - b);
 $('rank-limit').innerHTML = availableRanks.map(rank => '<option value="' + rank + '">R' + rank + '</option>').join('');
@@ -25,8 +25,8 @@ $('skill-filter').addEventListener('input', event => {
     const field = $('goal-' + index);
     const selected = field.value;
     field.innerHTML = '<option value="">เลือกสกิล</option>' + searchableSkills
-      .filter(name => name === selected || name.toLowerCase().includes(query))
-      .map(name => '<option value="' + esc(name) + '">' + esc(name) + '</option>').join('');
+      .filter(name => name === selected || (name+' '+skillSummary(name)).toLowerCase().includes(query))
+      .map(name => '<option value="' + esc(name) + '">' + esc(name+' · '+skillSummary(name)) + '</option>').join('');
     field.value = selected;
   }
 });
@@ -39,6 +39,7 @@ function updateGoalLevel(index, desired) {
   field.innerHTML = name ? Array.from({length: cap}, (_, i) =>
     '<option value="' + (i + 1) + '">Lv ' + (i + 1) + '</option>').join('') : '<option>—</option>';
   if (name) field.value = Math.min(cap, desired ?? cap);
+  $('goal-note-'+index).innerHTML = name ? abilityButton('skill',name,name,field.value)+' · '+esc(skillSummary(name)) : '';
 }
 
 function showSearchMessage(message) {
@@ -50,7 +51,7 @@ for (let index = 0; index < goalCount; index++) {
     updateGoalLevel(index);
     showSearchMessage('กดค้นหาเพื่อจัดชุดตามสกิลที่เลือก');
   });
-  $('goal-lv-' + index).addEventListener('change', () => showSearchMessage('กดค้นหาเพื่อใช้เลเวลใหม่'));
+  $('goal-lv-' + index).addEventListener('change', () => { updateGoalLevel(index, Number($('goal-lv-'+index).value)); showSearchMessage('กดค้นหาเพื่อใช้เลเวลใหม่'); });
 }
 $('rank-limit').addEventListener('change', () => showSearchMessage('กดค้นหาเพื่อใช้เพดาน Rarity ใหม่'));
 $('prefer-exact').addEventListener('change', () => showSearchMessage('กดค้นหาเพื่อใช้เงื่อนไขใหม่'));
@@ -86,13 +87,13 @@ function searchForArmor() {
     const missing = actual < level ? ' · ขาด ' + (level - actual) + ' Lv' : '';
     const excess = actual > level ? ' · เกิน ' + (actual - level) + ' Lv' : '';
     const detail = [value, skillNotes[name]].filter(Boolean).join(' · ');
-    return '<li><strong>' + esc(name) + '</strong> <span class="' + (missing?'negative':'positive') +
+    return '<li>' + abilityButton('skill',name,name,actual) + ' <span class="' + (missing?'negative':'positive') +
       '">Lv ' + actual + ' / ' + level + esc(missing || excess) + '</span>' +
       (detail ? '<small>' + esc(detail) + '</small>' : '') + '</li>';
   }).join('');
-  const items = build.selected.map(item => '<li>' + slots[item.slot] + ' · ' + esc(item.name) + ' · R' + item.rank + '</li>').join('');
+  const items = build.selected.map(item => '<li>' + slots[item.slot] + ' · ' + abilityButton('gear',item.id,item.name) + ' · R' + item.rank + '</li>').join('');
   const allSkills = Object.entries(build.levels).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))
-    .map(([name,level])=>'<li>'+esc(name)+' · Lv '+level+'</li>').join('');
+    .map(([name,level])=>'<li>'+abilityButton('skill',name,name,level)+' · Lv '+level+'</li>').join('');
   $('search-result').innerHTML = '<p class="search-summary" role="status"><strong>' + summary + '</strong> · DEF ' +
     result.defense + '</p><ul class="search-skills">' + levels + '</ul><ul class="search-items">' +
     items + '</ul><details class="result-skills"><summary>ดูสกิลทั้งหมดในชุด</summary><ul>' + allSkills +
@@ -125,12 +126,12 @@ function searchForArmor() {
       const card = document.createElement('div');
       card.className = 'effect';
       card.innerHTML = '<strong>ชุดทางเลือก ' + (index+1) + ' · DEF ' + alternative.defense + '</strong><br>' +
-        calculated.selected.map(item => esc(item.name) + ' · R' + item.rank).join(' / ') +
+        calculated.selected.map(item => abilityButton('gear',item.id,item.name) + ' · R' + item.rank).join(' / ') +
         '<details><summary>ดูสกิลทั้งหมด</summary><ul>' + Object.entries(calculated.levels)
           .sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))
-          .map(([name,level])=>'<li>'+esc(name)+' · Lv '+level+'</li>').join('') +
+          .map(([name,level])=>'<li>'+abilityButton('skill',name,name,level)+' · Lv '+level+'</li>').join('') +
         '</ul></details><button type="button">ใส่เกราะชุดนี้</button>';
-      card.querySelector('button').addEventListener('click', () => {
+      card.querySelector('button:last-child:not(.ability-name)').addEventListener('click', () => {
         $('armor-filter').value = '';
         update(() => Object.assign(state.gear, alternative.gear), 'ใส่ชุดทางเลือกแล้ว');
       });

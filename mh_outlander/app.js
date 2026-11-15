@@ -56,8 +56,8 @@ function renderGearOptions() {
 $('armor-filter').addEventListener('input',renderGearOptions);
 const cardLabels=['Core','ช่อง 2','ช่อง 3','ช่อง 4','ช่อง 5'];
 $('cards').innerHTML = cardLabels.map((label,i)=>'<label for="card-'+i+'"><span>'+label+
-  '</span><select id="card-'+i+'">'+options(visages,v=>v.name+' · '+v.cost)+'</select></label>').join('');
-$('buddy').innerHTML = options(buddies,b=>b.name);
+  '</span><select id="card-'+i+'">'+options(visages,v=>v.name+' · '+v.cost+' · '+(v.core || v.sets.join(' / ')))+'</select></label>').join('');
+$('buddy').innerHTML = options(buddies,b=>b.name+' · '+b.effect);
 $('preset').innerHTML = options(presets,p=>p.name,false);
 for (const slot of Object.keys(slots)) $('slot-'+slot).addEventListener('change',e=>update(()=>{state.gear[slot]=e.target.value;}));
 for (let i=0;i<5;i++) $('card-'+i).addEventListener('change',e=>update(()=>{state.visages[i]=e.target.value;}));
@@ -85,7 +85,7 @@ function renderVisageDetails(result) {
   $('visage-details').innerHTML = result.cards.map((card,index) => {
     if (!card) return '';
     const core = card.core || 'ยังไม่มีข้อมูล Core ที่ตรวจยืนยันได้';
-    return '<div class="effect"><strong>'+esc(card.name)+' · Cost '+card.cost+'</strong> · '+(index===0?'Core':'ช่อง '+(index+1))+
+    return '<div class="effect"><strong>'+abilityButton('visage',card.id,card.name)+' · Cost '+card.cost+'</strong> · '+(index===0?'Core':'ช่อง '+(index+1))+
       '<br>เซ็ต: '+esc(card.sets.join(' / '))+'<br>Core effect'+(index===0?' (ช่องนี้ทำงานเมื่อเข้าเงื่อนไข)':' (ทำงานเมื่อใส่ช่อง Core)')+
       ': '+esc(core)+'<br>'+link(card.url,'รายละเอียดการ์ด')+'</div>';
   }).join('');
@@ -101,10 +101,10 @@ function renderVisageSuggestions() {
   const target = $('visage-suggestion');
   if (!suggestion) { target.innerHTML=''; return; }
   const total=suggestion.cards.reduce((sum,id)=>sum+(visages.find(card=>card.id===id)?.cost||0),0);
-  target.innerHTML='<div class="effect">'+esc(suggestion.text)+'<br>'+suggestion.cards.map(id=>esc(visages.find(card=>card.id===id)?.name||id)).join(' / ')+
+  target.innerHTML='<div class="effect">'+esc(suggestion.text)+'<br>'+suggestion.cards.map(id=>abilityButton('visage',id,visages.find(card=>card.id===id)?.name||id)).join(' / ')+
     '<br>Cost '+total+' / '+state.budget+' · ตัวอย่างสำหรับลอง ไม่ทราบว่าคุณมีการ์ดใด'+
     (total>state.budget?'<br>Cost เกินเพดานที่ตั้งไว้':'')+'<br><button type="button" '+(total>state.budget?'disabled':'')+'>ใส่ชุดแนะนำ</button></div>';
-  target.querySelector('button').addEventListener('click',()=>update(()=>{state.visages=[...suggestion.cards];},'ใส่ Visage แนะนำแล้ว'));
+  target.querySelector('button:not(.ability-name)').addEventListener('click',()=>update(()=>{state.visages=[...suggestion.cards];},'ใส่ Visage แนะนำแล้ว'));
 }
 
 function render() {
@@ -115,7 +115,7 @@ function render() {
   for (const slot of Object.keys(slots)) {
     $('slot-'+slot).value=state.gear[slot]||'';
     const g=current.selected.find(g=>g.slot===slot);
-    $('source-'+slot).innerHTML=g ? [g.type,g.element,g.attack!==undefined?'ATK '+g.attack:'',g.defense!==undefined?'DEF '+g.defense:'',
+    $('source-'+slot).innerHTML=g ? [abilityButton('gear',g.id,g.name),g.type,g.element,g.attack!==undefined?'ATK '+g.attack:'',g.defense!==undefined?'DEF '+g.defense:'',
       g.materialsUnknown?'ยังไม่มีสูตรวัสดุ':g.step,link(g.url,'ที่มา')].filter(Boolean).join(' · '):'';
   }
   for(let i=0;i<5;i++) {
@@ -146,7 +146,7 @@ function render() {
       '<ul>'+current.origins[s].map(i=>'<li>'+esc(i.name)+' +'+i.value+'</li>').join('')+'</ul>'+
       (lv<total?'<p class="muted">แต้มดิบ '+total+'</p>':'')+
       (skillNotes[s]?'<p class="muted">'+esc(skillNotes[s])+'</p>':'')+
-      link(GW+'skills','ดูข้อมูลสกิล')+'</details>';
+      abilityButton('skill',s,'รายละเอียด '+s,lv)+'</details>';
   }).join('')||empty('เลือกอาวุธหรือเกราะเพื่อเริ่ม');
   $('sets').innerHTML=Object.entries(current.sets).map(([s,count])=>{
     const rule=armorSets[s];
@@ -162,7 +162,7 @@ function render() {
       return effect(esc(name)+' · '+count+' ชิ้น<br>'+first+' ชิ้น: '+(count>=first?esc(set?.[0]||'ดูแหล่งข้อมูล'):'ยังไม่เปิด')+
         '<br>'+second+' ชิ้น: '+(count>=second?esc(set?.[1]||'ดูแหล่งข้อมูล'):'ยังไม่เปิด'));
     }).join('') + (core ? effect('Core: '+esc(core.name)+'<br>'+esc(current.core||'ยังไม่ได้ยืนยัน ดูข้อมูลการ์ด')):'') : empty('ยังไม่ได้เลือกการ์ด');
-  $('buddy-effects').innerHTML=buddy?effect(esc(buddy.name)+' · '+esc(buddy.effect)):empty('ยังไม่ได้เลือก Buddy');
+  $('buddy-effects').innerHTML=buddy?effect(abilityButton('buddy',buddy.id,buddy.name)+' · '+esc(buddy.effect)):empty('ยังไม่ได้เลือก Buddy');
   const keys=Array.from(new Set([...skills,...Object.keys(reference.levels)])).sort((a,b)=>(reference.levels[b]??0)-(reference.levels[a]??0)||a.localeCompare(b));
   const changes=Object.keys(slots).flatMap(s=>{
     const next=reference.selected.find(g=>g.slot===s);
