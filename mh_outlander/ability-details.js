@@ -87,7 +87,7 @@ function abilityPicture(kind,item) {
   const fallback = '<span class="ability-symbol" aria-hidden="true">'+symbol+'</span>';
   const variant = $('art-variant')?.value || 'male';
   const slug = item?.url?.split('/').at(-1);
-  const image = weapon ? weaponPictures[item.id] : kind==='gear' ? armorArt[slug]?.[variant] : '';
+  const image = weapon ? item.image || weaponPictures[item.id] : kind==='gear' ? armorArt[slug]?.[variant] : '';
   if (!image) return fallback;
   const caption = weapon ? 'ภาพอาวุธ' : 'ภาพเซ็ตเต็มของเกราะชิ้นนี้';
   return '<figure class="ability-picture"><a href="'+esc(image)+
@@ -127,8 +127,8 @@ function setupAbilityDialog() {
         body = '<p>'+esc(stats.join(' · '))+'</p>'+
           (skills ? '<ul>'+skills+'</ul>' : '<p>ไม่มีแต้มสกิลบนชิ้นนี้</p>')+
           (bonus ? '<p>'+esc(bonus.label)+' · '+bonus.threshold+' ชิ้น</p>' : '')+
-          (item.rankRange ? '<small class="item-ability">ข้อมูลในแอปเป็นค่าสูงสุดของช่วง R'+esc(item.rankRange)+
-            ' · ดูสเตตัสรายระดับและสูตรได้ที่แหล่งข้อมูล</small>' : '');
+          (item.materialsUnknown ? '<small class="item-ability">ยังไม่มีสูตรของระดับนี้</small>' :
+            '<small class="item-ability">'+esc(item.step)+' · '+item.materials.length+' รายการวัตถุดิบ</small>');
       } else if (kind === 'visage') {
         const sets = item.sets.map(name => '<li><strong>'+esc(name)+'</strong><br>'+
           esc((visageSetEffects[name] || []).join(' / ') || 'ยังไม่มีคำอธิบายโบนัสเซ็ต')+'</li>').join('');

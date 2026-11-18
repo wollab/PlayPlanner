@@ -8,7 +8,7 @@ const skillOptionText = searchableSkills.map(name =>
   '<option value="' + esc(name) + '">' + esc(name+' · '+skillSummary(name)) + '</option>').join('');
 const goalCount = 3;
 
-$('armor-coverage').innerHTML = 'เกราะ ' + armorLibrary.pieces + ' ชิ้น · ' +
+$('armor-coverage').innerHTML = 'เกราะ ' + updates.catalogCoverage.armorPieces + ' ชิ้น · ' +
   importedArmor.length.toLocaleString('en-US') + ' รายการแยกตาม Rarity<br><small>คลังเกราะจาก GameWith</small>';
 $('skill-goals').innerHTML = Array.from({length: goalCount}, (_, index) =>
   '<div class="goal-row"><label>สกิลที่ ' + (index + 1) + '<select id="goal-' + index +

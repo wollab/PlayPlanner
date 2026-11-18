@@ -17,6 +17,19 @@ const guideType = $('guide-type');
 const guideElement = $('guide-element');
 const guideWeapon = $('guide-weapon');
 const guideResults = $('guide-results');
+const coverage = updates.catalogCoverage;
+$('catalog-coverage-content').innerHTML =
+  '<p>อาวุธ '+coverage.weaponFamiliesWithStats+' / '+coverage.weaponIndex+
+  ' สายมีค่าสถานะ · '+weapons.length.toLocaleString('en-US')+' ตัวเลือกตาม Rarity</p>'+
+  '<p>เกราะ '+coverage.armorPieces+' ชิ้น จาก '+coverage.armorIndex+
+  ' เซ็ต · '+coverage.armorRanks.toLocaleString('en-US')+' ตัวเลือกตาม Rarity</p>'+
+  '<p>ต้นทางยังเว้นค่าสถานะ '+coverage.weaponUnknownRanks+' ระดับอาวุธ และ '+
+  coverage.armorUnknownRanks+' ระดับเกราะ</p>'+
+  '<p>Visage '+visages.length+' ใบ · Buddy '+buddies.length+' ตัว</p>'+
+  '<details><summary>อาวุธ '+coverage.unavailableWeaponSlugs.length+' สายที่ต้นทางยังไม่ลง ATK</summary><ul>'+
+    coverage.unavailableWeaponSlugs.map(slug=>'<li>'+link(GW+'weapons/'+slug,
+      slug.split('-').map(word=>word[0].toUpperCase()+word.slice(1)).join(' '))+'</li>').join('')+
+  '</ul></details>';
 const selectOptions = (rows, placeholder) => '<option value="">'+esc(placeholder)+'</option>'+
   options(rows,row=>row.label,false);
 const rows = values => values.map(id=>({id,label:id}));

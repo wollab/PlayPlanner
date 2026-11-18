@@ -26,23 +26,28 @@ const starterGear = [
   armor('a-waist','waist','Anja Coil','Anjanath',{[F]:2,[H]:1},['Scale','Fang','Nosebone','Tail']),
   armor('a-legs','legs','Anja Greaves','Anjanath',{[F]:1,[H]:1,Adversity:1},['Scale','Pelt']),
 ];
-const importedArmor = armorLibrary.items.map(([id,slot,name,set,rank,defense,skills,materials,step,url]) =>
+const updates = typeof module !== 'undefined' ? require('./catalog-update.js') :
+  {catalogCoverage,currentArmorBonuses,currentWeaponRanks,currentArmorUpdates};
+const armorRows = new Map([...armorLibrary.items, ...updates.currentArmorUpdates].map(row=>[row[0],row]));
+const importedArmor = [...armorRows.values()].map(([id,slot,name,set,rank,defense,skills,materials,step,url]) =>
   ({id,slot,name,set,rank,defense,skills,materials:materials ?? [],materialsUnknown:materials === null,step,url}));
 const importedIds = new Set(importedArmor.map(item => item.id));
-const weaponRows = typeof module !== 'undefined' ? require('./weapon-catalog.js') : weaponCatalog;
-const importedWeapons = weaponRows.flatMap(([slug,name,type,range,attack,affinity,element,elementAttack,sharpness,skill]) => {
+const importedWeapons = updates.currentWeaponRanks.flatMap(([slug,type,image,ranks]) => ranks.map(
+  ([name,rank,attack,affinity,element,elementAttack,sharpness,skills,materials,step]) => {
   const url = GW+'weapons/'+slug;
-  const rank = Number(range.split('-').at(-1));
-  if (starterGear.some(item=>item.url===url && item.rank===rank)) return [];
-  return [{id:'weapon-'+slug+'-r'+rank,slot:'weapon',name,type,rank,rankRange:range,attack,
-    affinity,element,elementAttack,sharpness,skills:skill ? {[skill]:10} : {},url,
-    materials:[],materialsUnknown:true}];
-});
-const gear = [...starterGear.filter(item => !importedIds.has(item.id)), ...importedWeapons, ...importedArmor];
+  const previous = starterGear.find(item=>item.url===url && item.rank===rank);
+  return {id:previous?.id || 'weapon-'+slug+'-r'+rank,slot:'weapon',name,type,rank,attack,
+    affinity,element,elementAttack,sharpness,skills,url,image,step,
+    materials:materials ?? [],materialsUnknown:materials === null};
+}));
+const weaponIds = new Set(importedWeapons.map(item=>item.id));
+const gear = [...starterGear.filter(item => !importedIds.has(item.id) && !weaponIds.has(item.id)),
+  ...importedWeapons, ...importedArmor];
 const armorSets = {
   Rathalos:{threshold:3, label:"Rathalos's Weakness", skills:{'Weakspot Exploit':1}},
   Anjanath:{threshold:3, label:'Anjanath Ember', skills:{[F]:1}},
-  ...armorLibrary.sets
+  ...armorLibrary.sets,
+  ...updates.currentArmorBonuses
 };
 const skillCaps = {[F]:7,[H]:3,[W]:5,Breaker:3,Deterrence:3,Wrecker:4,Adversity:1,'Quick-Bite':3,'Fire Resistance':3,'Charge Enhancement':7,'Weakspot Exploit':3,...armorLibrary.caps};
 const skillNotes = {
